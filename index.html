@@ -130,16 +130,25 @@ const COMPONENT_SECTIONS=[
  {id:'accessories',title:'Accessories',fields:[['findings','Findings / condition'],['actions','Repair actions'],['recommendations','Recommendations']]}
 ];
 const COMPONENT_QUICK_ENTRIES={"body":{"findings":["External leakage observed at body joint","Corrosion observed on pressure boundary","Cavitation-related damage suspected — document evidence","Steam cutting suspected — document evidence","Erosion observed — describe location and extent","Gasket sealing surface damage observed","Deposits or buildup observed"],"actions":["Cleaned accessible body surfaces","Replaced body or bonnet gasket","Repaired sealing surface as authorized","Removed deposits and cleaned passages","No corrective action performed"],"recommendations":["Recommend additional pressure-boundary inspection","Recommend evaluation of sealing surfaces","Recommend gasket replacement at next authorized opening","Recommend further assessment before return to service","No additional recommendation"]},"trim":{"findings":["Wear observed on plug or disc","Seat or seal ring wear observed","Scoring observed on guiding surfaces","Erosion or cavitation-related damage suspected","Deposits observed on trim components"],"actions":["Cleaned trim components","Replaced seal or seat component","Replaced plug or disc","Replaced guiding component","Reassembled existing trim","No corrective action performed"],"recommendations":["Recommend trim replacement evaluation","Recommend measurement against applicable tolerances","Recommend investigating recurring seat leakage","Recommend inspection of mating surfaces","No additional recommendation"]},"actuator":{"findings":["Diaphragm or piston seal leakage observed","Stem travel irregularity observed","Spring or mechanical damage observed","Actuator air leakage observed","Linkage looseness observed"],"actions":["Replaced diaphragm or piston seal","Adjusted actuator travel setting","Replaced actuator seal components","Secured linkage or fasteners","Performed actuator setup per applicable procedure","No corrective action performed"],"recommendations":["Recommend actuator air-leak test","Recommend travel/bench-set verification","Recommend further evaluation of actuator wear","Recommend review of instrument-air supply","No additional recommendation"]},"positioner":{"findings":["Travel response inconsistency observed","Calibration discrepancy observed","Instrument supply pressure issue observed","Feedback linkage issue observed","Positioner output irregularity observed"],"actions":["Performed calibration per applicable procedure","Adjusted feedback linkage","Repaired or replaced positioner component","Replaced positioner assembly","Checked instrument supply and output","No corrective action performed"],"recommendations":["Recommend diagnostic testing under documented conditions","Recommend instrument-air quality evaluation","Recommend review of positioner calibration","Recommend investigation of recurring travel issues","No additional recommendation"]},"accessories":{"findings":["Air leak observed at tubing or fitting","Regulator pressure discrepancy observed","Filter contamination observed","Solenoid operation discrepancy observed","Tubing or fitting damage observed"],"actions":["Replaced tubing or fitting","Repaired identified air leak","Serviced filter regulator","Replaced accessory component","Cleaned or replaced filter element","No corrective action performed"],"recommendations":["Recommend instrument-air system inspection","Recommend replacement of damaged tubing","Recommend regulator setting verification","Recommend evaluation of accessory reliability","No additional recommendation"]}};
-function sectionData(j,id){j.componentSections=j.componentSections||{};if(!j.componentSections[id])j.componentSections[id]={na:false,reason:'',findings:'',actions:'',recommendations:'',fieldNA:{}};let x=j.componentSections[id];x.fieldNA=x.fieldNA||{};
- // Remove only the contradictory legacy quick-select phrase when specific findings exist.
- if(typeof x.findings==='string'){
-  const lines=x.findings.split('\n');
-  const other=lines.filter(line=>line.trim()&&line.trim()!=='No visible abnormality observed'&&line.trim()!=='No abnormal response observed');
-  if(other.length!==0&&other.length!==lines.filter(line=>line.trim()).length){
-   x.findings=lines.filter(line=>line.trim()!=='No visible abnormality observed'&&line.trim()!=='No abnormal response observed').join('\n');
-  }
- }
- return x}
+const EXCLUSIVE_COMPONENT_ENTRIES={
+ findings:['No visible abnormality observed','No abnormal response observed'],
+ actions:['No corrective action performed'],
+ recommendations:['No additional recommendation']
+};
+function reconcileComponentText(key,value){
+ const rows=String(value||'').split('\n');
+ const excluded=EXCLUSIVE_COMPONENT_ENTRIES[key]||[];
+ const positives=rows.filter(row=>row.trim()&&!excluded.includes(row.trim()));
+ return positives.length?rows.filter(row=>!excluded.includes(row.trim())).join('\n'):String(value||'');
+}
+function sectionData(j,id){
+ j.componentSections=j.componentSections||{};
+ if(!j.componentSections[id])j.componentSections[id]={na:false,reason:'',findings:'',actions:'',recommendations:'',fieldNA:{}};
+ const x=j.componentSections[id];x.fieldNA=x.fieldNA||{};
+ // Reconcile exact, contradictory quick-select phrases from earlier prototype versions.
+ for(const key of ['findings','actions','recommendations'])if(typeof x[key]==='string')x[key]=reconcileComponentText(key,x[key]);
+ return x;
+}
 function componentFieldUI(config,x,key,label){
  const marked=!!(x.na||x.fieldNA[key]),fieldId='component_'+config.id+'_'+key,options=COMPONENT_QUICK_ENTRIES[config.id]?.[key]||[];
  return '<div class="field" style="min-width:0"><div class="flex" style="align-items:center;gap:8px;margin-bottom:5px"><label style="font-weight:700;flex:1">'+esc(label)+'</label><button type="button" class="btn '+(marked?'':'secondary')+'" style="padding:7px 12px" onclick="toggleComponentFieldNA(\''+config.id+'\',\''+key+'\')">'+(marked?'Undo N/A':'N/A')+'</button></div>'+
@@ -169,17 +178,28 @@ function applyComponentChoices(id,key){
  if(!checked.length){notify('Select one or more entries first.');return}
  const custom=document.getElementById(fieldId+'_custom'),otherChosen=checked.some(el=>el.value==='other');
  if(otherChosen&&!custom?.value.trim()){alert('Enter specific details for Other before adding.');custom?.focus();return}
- for(const el of checked){const entry=el.value==='other'?custom.value:options[Number(el.value)];if(entry)appendComponentText(target,entry);el.checked=false}
+ const entries=checked.map(el=>el.value==='other'?custom.value.trim():options[Number(el.value)]).filter(Boolean);
+ const exclusive=EXCLUSIVE_COMPONENT_ENTRIES[key]||[];
+ const neutral=entries.filter(e=>exclusive.includes(e));
+ const specific=entries.filter(e=>!exclusive.includes(e));
+ if(neutral.length&&specific.length){alert('Choose either "no action / no recommendation" OR the specific items—not both.');return}
+ if(neutral.length && target.value.split('\n').some(line=>line.trim()&&!exclusive.includes(line.trim()))){
+  alert('Specific entries are already documented. Remove them manually before selecting a "no action / no recommendation" statement.');return;
+ }
+ // When adding a concrete repair action or recommendation, remove only old exact neutral quick-select phrases.
+ if(specific.length){
+  const rows=target.value.split('\n');
+  target.value=rows.filter(line=>!exclusive.includes(line.trim())).join('\n').trim();
+ }
+ for(const entry of entries)appendComponentText(target,entry);
+ target.value=reconcileComponentText(key,target.value);
+ target.dispatchEvent(new Event('input',{bubbles:true}));
+ checked.forEach(el=>{el.checked=false});
  if(custom)custom.value='';
  const other=document.getElementById(fieldId+'_other');if(other)other.hidden=true;
  updateComponentSelectionCount(id,key);
  root.open=false;
- // Keep previously entered text aligned with the cleaned component findings.
- if(key==='findings'){
-  const rows=target.value.split('\n'),other=rows.filter(v=>v.trim()&&v.trim()!=='No visible abnormality observed'&&v.trim()!=='No abnormal response observed');
-  if(other.length && other.length!==rows.filter(v=>v.trim()).length){target.value=rows.filter(v=>v.trim()!=='No visible abnormality observed'&&v.trim()!=='No abnormal response observed').join('\n');target.dispatchEvent(new Event('input',{bubbles:true}));}
- }
- notify('Selected entries added. Review the documented details before saving.');
+ notify('Entries added. Confirm the repair documentation before saving.');
 }
 function appendComponentText(target,value){
  const entry=String(value||'').trim();if(!entry)return;
@@ -223,8 +243,14 @@ function componentReport(j){
  return output.join('');
 }
 function persistComponentSections(j){
- document.querySelectorAll('[data-component-field]').forEach(el=>{let [id,key]=el.dataset.componentField.split(':');if(!COMPONENT_SECTIONS.some(c=>c.id===id))return;if(!['findings','actions','recommendations'].includes(key))return;let x=sectionData(j,id);x[key]=el.value;if(key==='findings'){const lines=el.value.split('\n'),normal=lines.filter(v=>v.trim()&&v.trim()!=='No visible abnormality observed'&&v.trim()!=='No abnormal response observed');if(normal.length && normal.length!==lines.filter(v=>v.trim()).length){x[key]=lines.filter(v=>v.trim()!=='No visible abnormality observed'&&v.trim()!=='No abnormal response observed').join('\n');el.value=x[key]}}});
- document.querySelectorAll('[data-component-reason]').forEach(el=>{if(COMPONENT_SECTIONS.some(c=>c.id===el.dataset.componentReason))sectionData(j,el.dataset.componentReason).reason=el.value});
+ document.querySelectorAll('[data-component-field]').forEach(el=>{
+  const [id,key]=el.dataset.componentField.split(':');
+  if(!COMPONENT_SECTIONS.some(c=>c.id===id)||!['findings','actions','recommendations'].includes(key))return;
+  const x=sectionData(j,id);x[key]=reconcileComponentText(key,el.value);el.value=x[key];
+ });
+ document.querySelectorAll('[data-component-reason]').forEach(el=>{
+  if(COMPONENT_SECTIONS.some(c=>c.id===el.dataset.componentReason))sectionData(j,el.dataset.componentReason).reason=el.value;
+ });
 }
 function legacySectionNotice(j){
  const old=j.componentSections?.valve;if(!old)return '';
