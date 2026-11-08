@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "note": "Official manufacturer sources only. Changes trigger human review; nothing is automatically approved or removed.",
+  "legacyPolicy": "Keep obsolete/discontinued model records searchable and label archival status; never delete solely because a URL fails.",
+  "sources": [
+    {
+      "manufacturer": "Emerson / Fisher",
+      "url": "https://www.emerson.com/en/final-control",
+      "type": "portal"
+    },
+    {
+      "manufacturer": "Masoneilan / Baker Hughes",
+      "url": "https://valves.bakerhughes.com/resource-center",
+      "type": "portal"
+    },
+    {
+      "manufacturer": "Neles / Valmet",
+      "url": "https://www.valmet.com/flowcontrol/brands/neles/",
+      "type": "portal"
+    },
+    {
+      "manufacturer": "IMI CCI",
+      "url": "https://www.imi-critical.com/brands/imi-cci/",
+      "type": "portal"
+    }
+  ]
+}
