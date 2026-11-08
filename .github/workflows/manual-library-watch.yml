@@ -1,0 +1,32 @@
+name: OEM manual library watch
+on:
+  schedule:
+    - cron: "23 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  review-official-sources:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Check official manufacturer portals for candidate manual updates
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python3 scripts/manual_library_watch.py
+      - name: Commit updated monitoring snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manual-watch-state.json manual-watch-report.md
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: update official OEM manual watch snapshot"
+            git push
+          fi
