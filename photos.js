@@ -57,7 +57,7 @@ function photoSection(j){
  '<div class="grid photo-controls"><label class="field">Photo category<select id="photoCategory">'+PHOTO_CATEGORIES.map(c=>'<option value="'+c[0]+'">'+c[1]+'</option>').join('')+'</select></label>'+
  '<label class="field">Inspection stage<select id="photoStage"><option value="As found">As found</option><option value="Disassembly / inspection">Disassembly / inspection</option><option value="During repair">During repair</option><option value="As left">As left</option></select></label></div>'+
  '<label class="field">Photo description (optional)<input id="photoCaption" placeholder="E.g., corrosion on outlet-side body wall"></label>'+
- '<label class="field photo-upload">Take or select photos<input type="file" id="photoInput" accept="image/*" multiple onchange="addJobPhotos(this)" aria-label="Take or select inspection photographs"></label>'+
+ '<div class="photo-capture"><label class="field photo-upload">Take photo<input type="file" accept="image/*" capture="environment" onchange="addJobPhotos(this)" aria-label="Take inspection photograph"></label><label class="field photo-upload">Choose photos<input type="file" id="photoInput" accept="image/*" multiple onchange="addJobPhotos(this)" aria-label="Select inspection photographs"></label></div>'+
  '<p class="sub" id="photoFeedback" role="status">Select multiple photos or take a picture using your phone camera. Photos will be reduced in size for local storage.</p>'+
  '<div class="photo-grid">'+photos.map(p=>'<div class="photo-card"><div class="photo-image"><img data-photo-id="'+esc(p.id)+'" alt="'+esc(categoryName(p.category))+'" loading="lazy"><span class="photo-fallback">Loading photo…</span></div>'+
  '<strong>'+esc(categoryName(p.category))+'</strong><small>'+esc(p.stage||'As found')+' · '+esc(p.taken||'')+'</small>'+
@@ -88,6 +88,8 @@ async function normalizePhoto(file){
 }
 async function addJobPhotos(input){
  const files=Array.from(input.files||[]);if(!files.length)return;
+ if(!persistVisibleFields())return;
+ input.value='';
  const j=job(),workId=j.id,category=document.getElementById('photoCategory')?.value||'other',stage=document.getElementById('photoStage')?.value||'As found',caption=document.getElementById('photoCaption')?.value.trim()||'';
  const status=document.getElementById('photoFeedback');if(status)status.textContent='Saving '+files.length+' photo(s) on this device…';
  let count=0,errors=[];
