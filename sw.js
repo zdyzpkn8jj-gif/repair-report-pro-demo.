@@ -1,6 +1,6 @@
 /* Repair Report Pro offline shell: caches the app, not external systems or user data. */
-const CACHE = 'rrp-shell-v12-consistent-inspections-20261108';
-const SHELL = ['./', './index.html', './photos.js', './manuals.js', './manifest.webmanifest'];
+const CACHE = 'rrp-shell-v13-documentation-progress-20261108';
+const SHELL = ['./', './index.html', './photos.js', './manuals.js', './progress.js', './manifest.webmanifest'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
 });
@@ -18,7 +18,7 @@ self.addEventListener('fetch', event => {
     }).catch(() => caches.match('./index.html')));
     return;
   }
-  if(url.pathname.endsWith('/manifest.webmanifest') || url.pathname.endsWith('/index.html') || url.pathname.endsWith('/photos.js') || url.pathname.endsWith('/manuals.js')){
+  if(url.pathname.endsWith('/manifest.webmanifest') || url.pathname.endsWith('/index.html') || url.pathname.endsWith('/photos.js') || url.pathname.endsWith('/manuals.js') || url.pathname.endsWith('/progress.js')){
     event.respondWith(fetch(event.request, {cache:'no-store'}).then(response => {
       if(response.ok){const copy=response.clone();caches.open(CACHE).then(cache => cache.put(event.request,copy));}
       return response;
