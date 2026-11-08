@@ -23,39 +23,47 @@ const CARD_FIELDS={tag:'Equipment tag',customerRef:'Customer PO',device:'Valve t
 function serialCardPanel(){let d=serialCardDraft;return '<div class="panel" style="margin:12px 0;background:#f8fbff"><h3>Serial Card PDF Import</h3><p class="sub">Upload a text-based serial card PDF. Review extracted values before applying them to this work order.</p><input type="file" accept=".pdf,application/pdf" onchange="readSerialCard(this.files[0])"><p class="note">PDF content is processed in this browser. Scanned/image-only PDFs need OCR, not supported yet. No existing values will be overwritten without selection.</p>'+(d?'<b>'+esc(d.filename)+'</b><p class="sub">'+esc(d.status)+'</p>'+(d.notes||[]).map(n=>'<div class="alert">'+esc(n)+'</div>').join('')+(d.tags&&d.tags.length>1?'<label class="field">Select correct equipment tag<select id="serialCardTag"><option value="">Choose tag</option>'+d.tags.map(t=>'<option>'+esc(t)+'</option>').join('')+'</select></label>':'')+Object.keys(d.fields).map(k=>'<label class="field"><input type="checkbox" data-card-check="'+k+'" '+(job()[k]?'':'checked')+'><b>'+esc(CARD_FIELDS[k])+'</b><input data-card-value="'+k+'" value="'+esc(d.fields[k])+'"><small>Current: '+esc(job()[k]||'blank')+'</small></label>').join('')+(Object.keys(d.fields).length?'<div class="toolbar"><button class="btn" onclick="applySerialCard()">Apply selected values</button></div>':''):'')+'</div>'}
 function loadCardPdf(){if(window.pdfjsLib)return Promise.resolve(window.pdfjsLib);if(window.cardPdfLoading)return window.cardPdfLoading;window.cardPdfLoading=new Promise((ok,fail)=>{let sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';sc.onload=()=>window.pdfjsLib?ok(window.pdfjsLib):fail(Error('Parser not available'));sc.onerror=()=>fail(Error('Unable to load PDF parser'));document.head.appendChild(sc)}).catch(e=>{window.cardPdfLoading=null;throw e});return window.cardPdfLoading}
 function parseCardText(text){
- const lines=String(text||'').split(/\n/).map(x=>x.replace(/\s+/g,' ').trim()).filter(Boolean),all=lines.join('\n'),fields={},notes=[],tags=[];
- const find=rx=>{const m=all.match(rx);return m?m[1].trim():''};
- const put=(k,v)=>{if(v)fields[k]=v.trim().slice(0,1400)};
- const t=find(/Item:\s*\d+\s+Tag:\s*([^\n]+)/i);
- for(const tag of t.match(/[A-Z0-9]+(?:-[A-Z0-9]+){2,}/g)||[])if(!tags.includes(tag))tags.push(tag);
+ const raw=String(text||''),compact=raw.replace(/\s+/g,' ').trim(),fields={},notes=[],tags=[];
+ const find=rx=>{const m=compact.match(rx);return m?m[1].trim():''};
+ const put=(k,v)=>{if(v)fields[k]=String(v).trim().slice(0,1400)};
+ const tagChunk=find(/Item:\s*\d+\s+Tag:\s*(.*?)\s+(?:A41\s+CONTROL|PROCESSING LEVEL|\+\+\+)/i);
+ for(const tag of tagChunk.match(/[A-Z0-9]+(?:-[A-Z0-9]+){2,}/g)||[])if(!tags.includes(tag))tags.push(tag);
  if(tags.length===1)put('tag',tags[0]);
- if(tags.length>1)notes.push('Multiple tags found: choose the correct equipment tag before applying this card.');
- const range=find(/SerialRange:\s*([0-9-]+)/i);put('serialRange',range);
- const hi=all.search(/Field Changes/i),history=hi>=0?all.slice(hi):'';
- const serial=(history.match(/(?:^|\n)0*([0-9]{7,12})\s+\d{1,2}\/\d{1,2}\/\d{4}/)||[])[1]||'';
- put('serial',serial);
- if(!serial&&range.includes('-'))notes.push('Serial range is not an individual serial number. Confirm the exact assembly serial.');
- put('customerRef',find(/Cust\s*Po:\s*([^\s]+)/i));
- put('model',find(/\b(A41)\s+CONTROL VALVE ASSEMBLY/i));
- put('device',find(/(SIZE\s+\d+\s+HIGH PERFORMANCE BUTTERFLY VALVE[^\n]*)/i));
- const size=all.match(/SIZE\s+(\d+)\s+HIGH PERFORMANCE BUTTERFLY VALVE\s+(CL\d+)/i);
+ if(tags.length>1)notes.push('This serial card lists multiple equipment tags. Select the tag for this work order; do not apply all tags at once.');
+ const range=find(/SerialRange:\s*([0-9]+-[0-9]+)/i);put('serialRange',range);
+ const hi=compact.search(/Field\s+Changes/i),history=hi>=0?compact.slice(hi):'';
+ if(range){
+  const bounds=range.split('-').map(Number);
+  const candidates=[...new Set((compact.match(/\b0*[0-9]{8,12}\b/g)||[]).filter(x=>Number(x)>=bounds[0]&&Number(x)<=bounds[1]))];
+  if(candidates.length===1)put('serial',candidates[0]);
+  else notes.push('Serial range is not a unique valve serial number; confirm the exact assembly serial from this card or nameplate.');
+ }
+ put('customerRef',find(/Cust\s*Po:\s*([A-Z0-9-]+)/i));
+ put('model',find(/\b(A41)\s+CONTROL VALVE ASSEMBLY/i)||find(/\bTYPE\s+(A41)\b/i));
+ const valve=find(/(SIZE\s+\d+\s+HIGH PERFORMANCE BUTTERFLY VALVE\s+CL\d+)/i);
+ put('device',valve||find(/(A41\s+CONTROL VALVE ASSEMBLY SIZE\s+\d+)/i));
+ const size=compact.match(/SIZE\s+(\d+)\s+HIGH PERFORMANCE BUTTERFLY VALVE\s+(CL\d+)/i);
  if(size)put('sizeRating',size[1]+' in / '+size[2]);
  put('valveCode',find(/\*(A41-[0-9-]+)/i));
- put('valveConfiguration',lines.filter(x=>/BODY WITH|DISK,|SEAL RING|BEARINGS,|SINGLE FLG/i.test(x)).join(' | '));
- put('packingType',find(/(GRAPHITE RIBBON PACKING[^\n]*)/i));
- put('flowDirection',find(/(UNIDIRECTIONAL SHUTOFF[^\n]*)/i));
- put('designConditions',lines.filter(x=>/^F51\b/.test(x)).map(x=>x.replace(/^F51\s*/, '')).join(' | '));
- put('actuatorModel',find(/TYPE\s+(1035)\s+MODEL/i));
+ put('packingType',find(/(GRAPHITE RIBBON PACKING\s*,?\s*ARRANGEMENT\s+[A-Z0-9]+)/i));
+ put('flowDirection',find(/(UNIDIRECTIONAL SHUTOFF\s*,?\s*FLOW MUST BE IN REVERSE DIRECTION)/i));
+ put('valveConfiguration',find(/(CARBON STEEL SINGLE FLG BODY WITH THRU HOLES[\s\S]{0,240}?BEARINGS)/i));
+ const f51=[...compact.matchAll(/\bF51\s+(.{1,90}?)(?=\s+F51\b|\s+[A-C]\s+\d+\s+\*|$)/g)].map(m=>m[1].trim());
+ if(f51.length)put('designConditions',f51.join(' | '));
+ put('actuatorModel',find(/\bTYPE\s+(1035)\s+MODEL/i));
  put('actuatorCode',find(/\*(1035-[0-9-]+)/i));
- put('actuator',find(/(TYPE 1035 MODEL[^\n]*)/i));
- put('actuatorConfiguration',find(/(CLOCKWISE ACTION TO CLOSE VALVE[^\n]*)/i));
- put('originalPositioner',find(/TYPE\s+(DVC6030)\s+SINGLE/i)||find(/\b(DVC6030)\b/i));
+ put('actuator',find(/(TYPE\s+1035\s+MODEL\s+ESA\s+1600\s+HIGH TEMP[^,]*,?\s*SPRING SET NO\s+\d+)/i));
+ put('actuatorConfiguration',find(/(CLOCKWISE ACTION TO CLOSE VALVE\s*,?\s*SPRING FAIL VALVE CLOSED)/i));
+ put('originalPositioner',find(/\bTYPE\s+(DVC6030)\s+SINGLE/i)||find(/\b(DVC6030)\b/i));
  put('positionerCode',find(/\*(DVC-[0-9-]+)/i));
- put('regulator',find(/TYPE\s+(67CFR-601)\b/i)||find(/TYPE\s+(67CFR)\b/i));
- put('testRequirements',lines.filter(x=>/HYDRO \d+|SEAT LEAK TEST|SIGNATURE SERIES|TEST PER COMPONENT/i.test(x)).join(' | '));
- const change=history.match(/INSTALLED\s+(DVC[0-9A-Z-]+)\s+SN\s+([A-Z0-9-]+)/i);
- if(change){put('positionerModel',change[1]);put('positionerSerial',change[2]);notes.push('The field-change log lists a '+change[1]+' installation. Verify the physically installed controller before service; the original controller is kept separately.')}
- if(history){put('serialCardUpdates',history.replace(/\n/g,' | '));notes.push('Check the dated field-change records; historical construction is not necessarily the current configuration.')}
+ put('regulator',find(/\bTYPE\s+(67CFR-601)\b/i)||find(/\bTYPE\s+(67CFR)\b/i));
+ const tests=[];
+ for(const rx of [/HYDRO\s+\d+\s*PSI\s*\/\s*\d+\s*MIN/i,/SEAT LEAK TEST\s+.{0,90}?\s+SCFH\s*@\s*\d+\s*PSID/i,/SIGNATURE SERIES\s+2\s+TEST/i]){const m=compact.match(rx);if(m)tests.push(m[0])}
+ if(tests.length)put('testRequirements',tests.join(' | '));
+ const replacement=history.match(/INSTALLED\s+(DVC[0-9A-Z-]+)\s+SN\s+([A-Z0-9-]+)/i);
+ if(replacement){put('positionerModel',replacement[1]);put('positionerSerial',replacement[2]);notes.push('Field-change record documents an installation of '+replacement[1]+'. Check the actual installed controller and serial before service.')}
+ if(history){put('serialCardUpdates',history);notes.push('Field changes may supersede the originally supplied configuration. This historical record is not proof of current physical condition.')}
+ if(!replacement&&fields.originalPositioner)notes.push('Original controller identified; current installed controller must be verified.');
  return {fields,notes,tags};
 }
 async function readSerialCard(file){if(!file)return;if(!/\.pdf$/i.test(file.name)||file.size>15e6){alert('Upload a PDF under 15 MB');return}if(!persistVisibleFields())return;let selected=job().id;serialCardDraft={filename:file.name,fields:{},status:'Reading PDF...'};render();try{let lib=await loadCardPdf();lib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';let pdf=await lib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;if(pdf.numPages>30)throw Error('30-page limit');let lines=[];for(let p=1;p<=pdf.numPages;p++){let items=(await(await pdf.getPage(p)).getTextContent()).items;let prev=null,group=[];for(let x of items){let y=x.transform?.[5]||0;if(prev!==null&&Math.abs(prev-y)>3){lines.push(group.join(' '));group=[]}group.push(x.str||'');prev=y}lines.push(group.join(' '))}if(job().id!==selected)return;let t=lines.join('\n'),parsed=parseCardText(t);serialCardDraft={filename:file.name,fields:parsed.fields,notes:parsed.notes,tags:parsed.tags,status:!t.trim()?'No selectable text found. Scanned PDFs require OCR.':Object.keys(parsed.fields).length?'Review identified assembly details and change records below.':'PDF read, but recognized labels were not found.'};render()}catch(e){serialCardDraft={filename:file.name,fields:{},status:'Import unavailable: '+e.message};render()}}
