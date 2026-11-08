@@ -1,0 +1,10 @@
+{
+  "name": "Repair Report Pro",
+  "short_name": "Repair Pro",
+  "description": "Offline-capable valve repair documentation prototype",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#0b1a2e"
+}
