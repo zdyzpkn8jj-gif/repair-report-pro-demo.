@@ -1,5 +1,5 @@
 /* Repair Report Pro offline shell: caches the app, not external systems or user data. */
-const CACHE = 'rrp-shell-v2-quickselect-20261107';
+const CACHE = 'rrp-shell-v3-notes-dropdowns-20261107';
 const SHELL = ['./', './index.html', './manifest.webmanifest'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
