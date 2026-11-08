@@ -1,6 +1,7 @@
 /* Repair Report Pro photo module: offline device-local IndexedDB image blobs.
    Photo metadata belongs to each work order; no cloud uploads are configured. */
 const PHOTO_CATEGORIES=[
+ ['datatag','Data tags / equipment nameplates'],
  ['assembly','As-found assembly'],
  ['damage','As-found damage'],
  ['body','Valve body / pressure boundary'],
