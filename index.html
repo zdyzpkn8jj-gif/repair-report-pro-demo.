@@ -34,7 +34,7 @@ function parseCardText(text){
  const hi=compact.search(/Field\s+Changes/i),history=hi>=0?compact.slice(hi):'';
  if(range){
   const bounds=range.split('-').map(Number);
-  const candidates=[...new Set((compact.match(/\b0*[0-9]{8,12}\b/g)||[]).filter(x=>Number(x)>=bounds[0]&&Number(x)<=bounds[1]))];
+  const candidates=[...new Set(((history||'').match(/\b0*[0-9]{8,12}\b/g)||[]).filter(x=>Number(x)>=bounds[0]&&Number(x)<=bounds[1]))];
   if(candidates.length===1)put('serial',candidates[0]);
   else notes.push('Serial range is not a unique valve serial number; confirm the exact assembly serial from this card or nameplate.');
  }
