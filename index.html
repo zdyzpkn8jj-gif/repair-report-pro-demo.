@@ -213,7 +213,7 @@ function componentSectionUI(j,config){
  (all?'<div class="note" style="padding:9px 12px"><b>All fields N/A.</b> This does not mean inspected, repaired, or tested.</div>':'')+
  (all?'<label class="field">Reason / scope clarification (optional)<textarea data-component-reason="'+config.id+'" placeholder="e.g., not included in authorized repair scope">'+esc(x.reason||'')+'</textarea></label>':'')+
  '<div class="grid">'+config.fields.map(([key,label])=>componentFieldUI(config,x,key,label)).join('')+'</div>'+
- '<p class="note">Selections apply only to this work order; clearing N/A restores saved text without changing serial-card or assembly history.</p></div>';
+ '<p class="note">Entire sections marked N/A are hidden from the customer report/PDF, but remain available for internal review. Clearing N/A restores saved entries.</p></div>';
 }
 function toggleComponentFieldNA(id,key){
  const c=COMPONENT_SECTIONS.find(c=>c.id===id);if(!c||!c.fields.some(f=>f[0]===key))return;
@@ -235,11 +235,20 @@ function setSectionAllNA(id,flag){
 function toggleSectionNA(id){const c=COMPONENT_SECTIONS.find(c=>c.id===id);if(c){const x=sectionData(job(),id);setSectionAllNA(id,!(x.na||c.fields.every(([k])=>x.fieldNA[k])))}}
 function setSectionApplicability(id,value){setSectionAllNA(id,value==='na')}
 function componentReport(j){
- const output=COMPONENT_SECTIONS.map(c=>{const x=sectionData(j,c.id);const all=x.na||c.fields.every(([k])=>!!x.fieldNA[k]);
- return '<div class="section"><h3>'+esc(c.title)+'</h3>'+(all?'<p><b>Not applicable to this work order</b>'+(x.reason?' — '+esc(x.reason):'')+'</p>':c.fields.map(([k,label])=>'<p><b>'+esc(label)+':</b> '+(x.fieldNA[k]?'Not applicable':esc(x[k]||'Not documented'))+'</p>').join(''))+'</div>'});
- // Legacy combined valve / positioner-and-accessories notes remain available as historical entries.
+ // Entire sections marked N/A remain in the work order but are omitted from the customer report/PDF.
+ const output=COMPONENT_SECTIONS.flatMap(c=>{
+  const x=sectionData(j,c.id);
+  const all=x.na||c.fields.every(([key])=>!!x.fieldNA[key]);
+  if(all)return [];
+  return ['<div class="section"><h3>'+esc(c.title)+'</h3>'+
+   c.fields.map(([key,label])=>'<p><b>'+esc(label)+':</b> '+(x.fieldNA[key]?'Not applicable':esc(x[key]||'Not documented'))+'</p>').join('')+
+   '</div>'];
+ });
+ // Keep historical combined notes, unless that legacy section was marked fully N/A.
  const legacy=j.componentSections?.valve;
- if(legacy)output.push('<div class="section"><h3>Prior combined valve body & trim entry (legacy)</h3>'+(legacy.na?'<p>Marked N/A in earlier version</p>':[['findings','Findings'],['actions','Actions'],['recommendations','Recommendations']].map(([k,label])=>'<p><b>'+label+':</b> '+esc(legacy[k]||'Not documented')+'</p>').join(''))+'<p>Review and transfer these notes to Body or Trim if needed.</p></div>');
+ if(legacy&&!legacy.na)output.push('<div class="section"><h3>Prior combined valve body & trim entry (legacy)</h3>'+
+  [['findings','Findings'],['actions','Actions'],['recommendations','Recommendations']].map(([k,label])=>'<p><b>'+label+':</b> '+esc(legacy[k]||'Not documented')+'</p>').join('')+
+  '<p>Review and transfer these notes to Body or Trim if needed.</p></div>');
  return output.join('');
 }
 function persistComponentSections(j){
