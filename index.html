@@ -213,7 +213,7 @@ function componentSectionUI(j,config){
  (all?'<div class="note" style="padding:9px 12px"><b>All fields N/A.</b> This does not mean inspected, repaired, or tested.</div>':'')+
  (all?'<label class="field">Reason / scope clarification (optional)<textarea data-component-reason="'+config.id+'" placeholder="e.g., not included in authorized repair scope">'+esc(x.reason||'')+'</textarea></label>':'')+
  '<div class="grid">'+config.fields.map(([key,label])=>componentFieldUI(config,x,key,label)).join('')+'</div>'+
- '<p class="note">Entire sections marked N/A are hidden from the customer report/PDF, but remain available for internal review. Clearing N/A restores saved entries.</p></div>';
+ '<p class="note">Only the section-wide N/A — Select All control hides an entire section from the customer report/PDF. Individual field N/A selections remain visible. Internal notes are preserved.</p></div>';
 }
 function toggleComponentFieldNA(id,key){
  const c=COMPONENT_SECTIONS.find(c=>c.id===id);if(!c||!c.fields.some(f=>f[0]===key))return;
@@ -238,7 +238,7 @@ function componentReport(j){
  // Entire sections marked N/A remain in the work order but are omitted from the customer report/PDF.
  const output=COMPONENT_SECTIONS.flatMap(c=>{
   const x=sectionData(j,c.id);
-  const all=x.na||c.fields.every(([key])=>!!x.fieldNA[key]);
+  const all=!!x.na; // Only explicit section-wide N/A hides a section; individual N/A selections never do.
   if(all)return [];
   return ['<div class="section"><h3>'+esc(c.title)+'</h3>'+
    c.fields.map(([key,label])=>'<p><b>'+esc(label)+':</b> '+(x.fieldNA[key]?'Not applicable':esc(x[key]||'Not documented'))+'</p>').join('')+
