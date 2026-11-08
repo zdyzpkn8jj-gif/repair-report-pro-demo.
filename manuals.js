@@ -4,7 +4,6 @@ const EMERSON_MANUALS=[
  {id:'657667',label:'Fisher 657 / 667 diaphragm actuator',type:'Actuator',terms:['657','667'],url:'https://www.emerson.com/en/final-control/products/fisher-657-and-667',kind:'Emerson manuals and guides'},
  {id:'667size',label:'Fisher 667 actuator — sizes 80 and 100',type:'Actuator',terms:['667'],extraSize:true,url:'https://www.emerson.com/is/content/emerson/en/final-control/flow-controls/documents/d100311x012-instruction-manual-667-diaphragm-actuators-size-80-and-100-fisher.pdf',kind:'Instruction manual D100311X012'},
  {id:'dvc6200',label:'FIELDVUE DVC6200 digital valve controller',type:'Positioner',terms:['dvc6200'],url:'https://www.emerson.com/en/final-control/products/fisher-dvc6200',kind:'Emerson manuals and guides'},
- {id:'dvcguide',label:'DVC6200 series quick-start guide',type:'Positioner',terms:['dvc6200'],url:'https://www.emerson.com/is/content/emerson/en/final-control/flow-controls/documents/quick-start-guide-fieldvue-dvc6200-series-digital-valve-controllers-en.pdf',kind:'Quick-start guide D103556X012'},
  {id:'dvcsis',label:'FIELDVUE DVC6200 SIS',type:'Positioner',terms:['dvc6200 sis'],url:'https://www.emerson.com/is/content/emerson/en/final-control/flow-controls/documents/instruction-manual-fisher-fieldvue-dvc6200-sis-digital-valve-controller-en.pdf',kind:'Instruction manual D103557X012'}
 ];
 function manualWords(v){return String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
@@ -18,7 +17,7 @@ function manualMatches(j){
   if(m.id==='dvcsis')return positioner.includes('sis');
   if(m.extraSize)return /\b(80|100)\b/.test(act);
   return true;
- }).filter(m=>m.id!=='dvcguide'||!positioner.includes('sis'));
+ });
 }
 function manualQuickCard(m){
  return '<div class="manual-card"><strong>'+esc(m.label)+'</strong><small>'+esc(m.type)+' · '+esc(m.kind)+'</small><a href="'+esc(m.url)+'" target="_blank" rel="noopener noreferrer">Open Emerson reference ↗</a></div>';
