@@ -1,0 +1,55 @@
+{
+  "Emerson / Fisher": {
+    "status": "ok",
+    "http": 200,
+    "links": [
+      "https://www.emerson.com/en/final-control/catalog/products-and-software/actuators/gear-operators-gearboxes",
+      "https://www.emerson.com/en/final-control/catalog/products-and-software/valve-software/prv-monitoring",
+      "https://www.emerson.com/en/final-control/products/emerson-var-technical-support"
+    ],
+    "url": "https://www.emerson.com/en/final-control"
+  },
+  "Masoneilan / Baker Hughes": {
+    "status": "ok",
+    "http": 200,
+    "links": [
+      "https://dam.bakerhughes.com/asset/2d1fac21-6318-4825-a813-aa5c5b96f4e7/Masoneilan-SVI3-Positioner-Manual-Czech.pdf",
+      "https://dam.bakerhughes.com/asset/321aa8e5-37ec-4def-baf6-7165e572d501/Consolidated-5500-Series-SafeSwitch-changeover-valve-Fact-Sheet-English.pdf",
+      "https://dam.bakerhughes.com/asset/6c8ae3b5-7488-40cc-9ada-bc10e0416db9/Masoneilan-80000-3-Way-Valve-Manual-Turkish.pdf",
+      "https://dam.bakerhughes.com/asset/6db087b5-df8b-4eb7-9a4d-1778b55cf407/Consolidated-1900-P-SV-Manual-Greek.pdf",
+      "https://dam.bakerhughes.com/asset/8cde0c36-7f9c-49fa-b07b-537f45f1cd96/Masoneilan-SVI-X1-3500-Manual.pdf",
+      "https://dam.bakerhughes.com/asset/a381d87d-513e-446b-ab54-45e5065114b7/Consolidated-5500-Series-SafeSwitch-changeover-valve-Tech-Spec-English.pdf",
+      "https://dam.bakerhughes.com/asset/c450ced7-fccb-409c-9dea-52dbb4bf4f0b/Consolidated-6F-digital-controller-manual-English.pdf",
+      "https://dam.bakerhughes.com/asset/cdeddce5-de18-4b15-94d8-7724c84f3119/Masoneilan-21000-Globe-Valve-Manual-Czech.pdf",
+      "https://dam.bakerhughes.com/asset/d56ace5e-9555-431d-865b-1d87ea9df6e1/Consolidated-1900-P-SV-Manual-English.pdf",
+      "https://dam.bakerhughes.com/asset/ee9badff-b868-4eec-92cb-eeff9d342ef8/Consolidated-5500-Series-SafeSwitch-changeover-valve-manual-English.pdf"
+    ],
+    "url": "https://valves.bakerhughes.com/resource-center"
+  },
+  "Neles / Valmet": {
+    "status": "ok",
+    "http": 200,
+    "links": [
+      "https://www.valmet.com/automation/energy/multifuel-biomass/",
+      "https://www.valmet.com/automation/services/maintenance-technical-support/",
+      "https://www.valmet.com/energyproduction/energy-solutions/biomass-to-energy/",
+      "https://www.valmet.com/flowcontrol/valve-automation/actuators/manual-actuators/neles-m-series-manual-actuator/",
+      "https://www.valmet.com/flowcontrol/valves-services/maintenance-planning-and-lifecycle-services/",
+      "https://www.valmet.com/flowcontrol/valves-services/maintenance-recommendations/",
+      "https://www.valmet.com/flowcontrol/valves-services/valve-repairs-and-maintenance/",
+      "https://www.valmet.com/flowcontrol/valves/flow-control-manual/",
+      "https://www.valmet.com/industries/bio/",
+      "https://www.valmet.com/insights/articles/biofuels-and-biomaterials/",
+      "https://www.valmet.com/insights/blogs/flow-control/2026/Optimizing-polymerization-focus-on-the-product-discharge/",
+      "https://www.valmet.com/pulp/wood-handling/biomass-drying/",
+      "https://www.valmet.com/service/maintenance-development-and-outsourcing/"
+    ],
+    "url": "https://www.valmet.com/flowcontrol/brands/neles/"
+  },
+  "IMI CCI": {
+    "status": "ok",
+    "http": 200,
+    "links": [],
+    "url": "https://processautomation.imiplc.com/about-us/brands/imi-cci"
+  }
+}
