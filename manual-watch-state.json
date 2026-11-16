@@ -13,15 +13,15 @@
     "status": "ok",
     "http": 200,
     "links": [
+      "https://dam.bakerhughes.com/asset/0a6f4da8-1f44-4d77-86fa-4f7ed7b6e40c/Consolidated-3500-6-Series-EBV-manual-English.pdf",
+      "https://dam.bakerhughes.com/asset/21c9d011-637e-4d85-a599-b08b27e647ca/Masoneilan-36005-V-Max-Manual-German.pdf",
       "https://dam.bakerhughes.com/asset/2d1fac21-6318-4825-a813-aa5c5b96f4e7/Masoneilan-SVI3-Positioner-Manual-Czech.pdf",
-      "https://dam.bakerhughes.com/asset/321aa8e5-37ec-4def-baf6-7165e572d501/Consolidated-5500-Series-SafeSwitch-changeover-valve-Fact-Sheet-English.pdf",
-      "https://dam.bakerhughes.com/asset/6c8ae3b5-7488-40cc-9ada-bc10e0416db9/Masoneilan-80000-3-Way-Valve-Manual-Turkish.pdf",
-      "https://dam.bakerhughes.com/asset/6db087b5-df8b-4eb7-9a4d-1778b55cf407/Consolidated-1900-P-SV-Manual-Greek.pdf",
-      "https://dam.bakerhughes.com/asset/8cde0c36-7f9c-49fa-b07b-537f45f1cd96/Masoneilan-SVI-X1-3500-Manual.pdf",
-      "https://dam.bakerhughes.com/asset/a381d87d-513e-446b-ab54-45e5065114b7/Consolidated-5500-Series-SafeSwitch-changeover-valve-Tech-Spec-English.pdf",
+      "https://dam.bakerhughes.com/asset/40c4484e-5fe9-44db-835e-3cb1c96602c7/Masoneilan-36005-V-Max-Manual-English.pdf",
+      "https://dam.bakerhughes.com/asset/5801eda2-8412-42e0-9eba-bdb30d9f0658/Masoneilan-7700P-Positioner-Manual-Polish.pdf",
+      "https://dam.bakerhughes.com/asset/61f27ee8-2e9b-4da4-887f-f82e5fe892b8/Masoneilan-control-valves-for-life-sciences-English.pdf",
+      "https://dam.bakerhughes.com/asset/82e06cc0-68ba-4ef4-88fd-72fe2152a56d/Consolidated-1900-1900-Dual-Media-DM-SRV-Manual-Hungarian.pdf",
       "https://dam.bakerhughes.com/asset/c450ced7-fccb-409c-9dea-52dbb4bf4f0b/Consolidated-6F-digital-controller-manual-English.pdf",
       "https://dam.bakerhughes.com/asset/cdeddce5-de18-4b15-94d8-7724c84f3119/Masoneilan-21000-Globe-Valve-Manual-Czech.pdf",
-      "https://dam.bakerhughes.com/asset/d56ace5e-9555-431d-865b-1d87ea9df6e1/Consolidated-1900-P-SV-Manual-English.pdf",
       "https://dam.bakerhughes.com/asset/ee9badff-b868-4eec-92cb-eeff9d342ef8/Consolidated-5500-Series-SafeSwitch-changeover-valve-manual-English.pdf"
     ],
     "url": "https://valves.bakerhughes.com/resource-center"
@@ -40,7 +40,7 @@
       "https://www.valmet.com/flowcontrol/valves/flow-control-manual/",
       "https://www.valmet.com/industries/bio/",
       "https://www.valmet.com/insights/articles/biofuels-and-biomaterials/",
-      "https://www.valmet.com/insights/blogs/flow-control/2026/Optimizing-polymerization-focus-on-the-product-discharge/",
+      "https://www.valmet.com/insights/blogs/flow-control/2026/smooth-project-execution-with-support-from-one-valve-automation-partner/",
       "https://www.valmet.com/pulp/wood-handling/biomass-drying/",
       "https://www.valmet.com/service/maintenance-development-and-outsourcing/"
     ],
